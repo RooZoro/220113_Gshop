@@ -1,6 +1,5 @@
 import axios from 'axios'
 export default function ajax(url, data = {}, type = 'GET') {
-
     return new Promise(function (resolve, reject) {
         //执行异步ajax请求
         let promise
@@ -13,7 +12,6 @@ export default function ajax(url, data = {}, type = 'GET') {
                 dataStr = dataStr.substring(0, dataStr.lastIndexOf('&'))
                 url = url + '?' + dataStr
             }
-            //发送get请求
             promise = axios.get(url)
         } else {
             promise = axios.post(url, data)

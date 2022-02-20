@@ -2,122 +2,37 @@
     <div>
         <section class="msite">
         <!--首页头部-->
-        <HeaderTop title="老八美食店">
-          <span class="header_search" slot="left">
+        <HeaderTop :title="address.name">
+          <router-link class="header_search" slot="left" to="/search">
             <i class="iconfont icon-sousuo"></i>
-          </span>
-          <span class="header_login" slot="right">
-            <span class="header_login_text">登录|注册</span>
-          </span>
+          </router-link>
+          <router-link class="header_login" slot="right" :to="userInfo._id ? '/userinfo' : '/login'">
+            <span class="header_login_text" v-if="!userInfo._id">
+              登录|注册
+              </span>
+            <span class="header_login_text" v-else>
+              <i class="iconfont icon-yonghu-01"></i>
+            </span>
+          </router-link>
         </HeaderTop>
         <!--首页导航-->
         <nav class="msite_nav">
-          <div class="swiper-container">
+          <div class="swiper-container" v-if="types.length">
             <div class="swiper-wrapper">
-              <div class="swiper-slide">
-                <a href="javascript:" class="link_to_food">
+              <div class="swiper-slide" v-for="(types,index) in typesArr" :key="index">
+                <a href="javascript:" class="link_to_food" v-for="(type, index) in types" :key="index">
                   <div class="food_container">
-                    <img src="./imgs/nav/1.jpg">
+                    <img :src="baseImageUrl+type.image_url">
                   </div>
-                  <span>甜品饮品</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/2.jpg">
-                  </div>
-                  <span>商超便利</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/3.jpg">
-                  </div>
-                  <span>美食</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/4.jpg">
-                  </div>
-                  <span>简餐</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/5.jpg">
-                  </div>
-                  <span>新店特惠</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/6.jpg">
-                  </div>
-                  <span>准时达</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/7.jpg">
-                  </div>
-                  <span>预订早餐</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/8.jpg">
-                  </div>
-                  <span>土豪推荐</span>
+                  <span>{{type.title}}</span>
                 </a>
               </div>
-              <div class="swiper-slide">
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/9.jpg">
-                  </div>
-                  <span>甜品饮品</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/10.jpg">
-                  </div>
-                  <span>商超便利</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/11.jpg">
-                  </div>
-                  <span>美食</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/12.jpg">
-                  </div>
-                  <span>简餐</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/13.jpg">
-                  </div>
-                  <span>新店特惠</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/14.jpg">
-                  </div>
-                  <span>准时达</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/1.jpg">
-                  </div>
-                  <span>预订早餐</span>
-                </a>
-                <a href="javascript:" class="link_to_food">
-                  <div class="food_container">
-                    <img src="./imgs/nav/2.jpg">
-                  </div>
-                  <span>土豪推荐</span>
-                </a>
-              </div>
+              
             </div>
             <!-- Add Pagination -->
             <div class="swiper-pagination"></div>
           </div>
+          <img src="./imgs/msite_back.svg" alt="back" v-else>
         </nav>
         <!--首页附近商家-->
         <div class="msite_shop_list">
@@ -137,20 +52,61 @@ import ShopList from '../../components/ShopList/ShopList.vue'
 
 import Swiper from 'swiper'
 import 'swiper/swiper.min.css'
+import {mapState} from 'vuex'
 
 export default {
+  data () {
+    return {
+      baseImageUrl: 'http://fuss10.elemecdn.com'
+    }
+  },
   mounted () {
-    new Swiper ('.swiper-container', {
-      loop: true,
-      pagination: {
-        el: '.swiper-pagination',
-      }
-    })
+    this.$store.dispatch('getFoodTypes')
+    this.$store.dispatch('getShops')
   },
   components: {
     HeaderTop,
     ShopList
+  },
+  computed: {
+    ...mapState(['address','types','userInfo']),
+    
+
+    typesArr () {
+      const {types} = this
+
+      const arr = []
+      let minArr = []
+    
+      types.forEach(c => {
+        
+        if(minArr.length===8){
+          minArr = []
+        }
+
+        if(minArr.length===0){
+          arr.push(minArr)
+        }
+      
+        minArr.push(c)
+      })
+      return arr
+    }
+  },
+  watch: {
+    types (value){
+      this.$nextTick(() =>{
+        new Swiper ('.swiper-container', {
+        loop: true,
+        pagination: {
+          el: '.swiper-pagination',
+        }
+        })
+      })
+      
+    }
   }
+
 }
 </script>
 
@@ -233,7 +189,7 @@ export default {
                       color #666
               .swiper-pagination
                 >span.swiper-pagination-bullet-active
-                  background #02a774
+                  background #blue
           .msite_shop_list
             top-border-1px(#e4e4e4)
             margin-top 10px
@@ -310,55 +266,6 @@ export default {
                         .shop_rating_order_left
                           float left
                           color #ff9a0d
-                          .star //2x图 3x图
-                            float left
-                            font-size 0
-                            .star-item
-                              display inline-block
-                              background-repeat no-repeat
-                            &.star-48
-                              .star-item
-                                width 20px
-                                height 20px
-                                margin-right 22px
-                                background-size 20px 20px
-                                &:last-child
-                                  margin-right: 0
-                                &.on
-                                  // bg-image('../components/ShopList/imgs/stars/star48_on')
-                                  bg-image('../../components/ShopList/imgs/stars/star48_on')
-                                &.half
-                                  bg-image('../../components/ShopList/imgs/stars/star48_half')
-                                &.off
-                                  bg-image('../../components/ShopList/imgs/stars/star48_off')
-                            &.star-36
-                              .star-item
-                                width 15px
-                                height 15px
-                                margin-right 6px
-                                background-size 15px 15px
-                                &:last-child
-                                  margin-right 0
-                                &.on
-                                  bg-image('../../components/ShopList/imgs/stars/star36_on')
-                                &.half
-                                  bg-image('../../components/ShopList/imgs/stars/star36_half')
-                                &.off
-                                  bg-image('../../components/ShopList/imgs/stars/star36_off')
-                            &.star-24
-                              .star-item
-                                width 10px
-                                height 10px
-                                margin-right 3px
-                                background-size 10px 10px
-                                &:last-child
-                                  margin-right 0
-                                &.on
-                                  bg-image('../../components/ShopList/imgs/stars/star24_on')
-                                &.half
-                                  bg-image('../../components/ShopList/imgs/stars/star24_half')
-                                &.off
-                                  bg-image('../../components/ShopList/imgs/stars/star24_off')
                           .rating_section
                             float left
                             font-size 10px
